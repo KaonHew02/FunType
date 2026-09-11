@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="FunType">
+  <title>FunType mark — a keycap whose legend is a text caret</title>
+  <rect fill="#b85f2b" x="3" y="8" width="42" height="37" rx="11"/>
+  <rect fill="#ff9e64" x="3" y="3" width="42" height="36" rx="11"/>
+  <rect fill="#231307" x="9.5" y="8.5" width="29" height="25" rx="8"/>
+  <rect fill="#ff9e64" x="21.6" y="13" width="4.8" height="16" rx="2.4"/>
+</svg>
