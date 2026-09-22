@@ -11,6 +11,7 @@ A typing-speed trainer. Open `index.html` in any browser — no server, no build
 | `logo.svg` | Full lockup: keycap mark + wordmark. Needs Gabarito installed to render the text correctly. |
 | `logo-mark.svg` | Icon only — pure geometry, safe anywhere (app icon, README, social avatar). |
 | `logo-favicon.svg` | The mark retuned for 16–24px: bigger cap, thicker caret, less padding. **Use this below ~28px.** |
+| `PROPOSAL.md` | Project proposal — scope, the measurement model and why it is hard to change, architecture, roadmap and risks. |
 
 To regenerate the artifact copy after editing `index.html`, strip the first 5 lines and the last 2:
 
