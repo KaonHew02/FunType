@@ -9,7 +9,8 @@ A typing-speed trainer. Open `index.html` in any browser — no server, no build
 | `index.html` | **The app.** Edit this one. Self-contained: HTML + CSS + JS in one file. |
 | `funtype.html` | Same page without the `<!doctype>/<html>/<head>/<body>` wrapper — the copy published as a Claude Artifact. Regenerate it after editing (see below). |
 | `logo.svg` | Full lockup: keycap mark + wordmark. Needs Gabarito installed to render the text correctly. |
-| `logo-mark.svg` | Icon only — pure geometry, safe anywhere (favicon, app icon, README). |
+| `logo-mark.svg` | Icon only — pure geometry, safe anywhere (app icon, README, social avatar). |
+| `logo-favicon.svg` | The mark retuned for 16–24px: bigger cap, thicker caret, less padding. **Use this below ~28px.** |
 
 To regenerate the artifact copy after editing `index.html`, strip the first 5 lines and the last 2:
 
@@ -55,4 +56,21 @@ Personal bests are kept per exact configuration (`time-30`, `words-25-p`, `code-
 - Gabarito for the interface, JetBrains Mono for everything you actually type.
 - Eight themes in the footer: dusk, daylight, matcha, cobalt, nordfall, bubblegum, mono, terminal.
 
-The logo is a keycap whose legend is a text caret. It blinks, and it depresses 2px when you press it.
+The logo is a keycap whose legend is a text caret — the same caret you chase across
+the screen while typing. It blinks on the same 1.05s beat as the real one, and the cap
+face depresses 2.6px when you press it, because the brand is also the restart button.
+
+The caret is `--accent-ink` sitting directly on the `--accent` cap, with no dark dish
+behind it. That is the whole trick: two shapes instead of four, so the caret is still a
+caret at 16px instead of collapsing into a smudge. Every theme defines an `accentInk`
+that contrasts hard against its `accent`, so the mark re-colours cleanly through all
+eight — checked against dusk, daylight, bubblegum and terminal.
+
+`logo-favicon.svg` is the same drawing with the cap pushed out to the edges and the
+caret thickened, for sizes where the 4px skirt and the thin serifs would silt up. Swap
+at about 28px. The app carries it inline as a `data:` URI so `index.html` still opens
+from anywhere with nothing beside it.
+
+The wordmark is Gabarito ExtraBold, tracking -0.022em, `Fun` in accent and `Type` in
+text. In `logo.svg` it is live text — outline it before handing the file to anything
+that will not have Gabarito.

@@ -1,11 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 52" width="240" height="52" role="img" aria-label="FunType">
   <title>FunType logo — keycap mark and wordmark</title>
-  <g transform="translate(2 5)">
-    <rect fill="#b85f2b" x="3" y="8" width="42" height="37" rx="11"/>
-    <rect fill="#ff9e64" x="3" y="3" width="42" height="36" rx="11"/>
-    <rect fill="#231307" x="9.5" y="8.5" width="29" height="25" rx="8"/>
-    <rect fill="#ff9e64" x="21.6" y="13" width="4.8" height="16" rx="2.4"/>
+  <g transform="translate(0 2)">
+    <rect fill="#b85f2b" x="4" y="9" width="40" height="35" rx="11"/>
+    <rect fill="#ff9e64" x="4" y="4" width="40" height="35" rx="11"/>
+    <g fill="#231307">
+      <rect x="21" y="10.5" width="6" height="22" rx="3"/>
+      <rect x="16" y="10.5" width="16" height="4" rx="2"/>
+      <rect x="16" y="28.5" width="16" height="4" rx="2"/>
+    </g>
   </g>
-  <text x="61" y="35" font-family="Gabarito, 'Segoe UI', system-ui, sans-serif"
+  <text x="61" y="36" font-family="Gabarito, 'Segoe UI', system-ui, sans-serif"
         font-size="30" font-weight="800" letter-spacing="-0.6" fill="#ff9e64">Fun<tspan fill="#e6e4f0">Type</tspan></text>
 </svg>
