@@ -1,206 +1,329 @@
 # FunType — Project Proposal
 
-*A browser-based typing-speed trainer. No server, no build, no install.*
+2026-09-23 · Kaon
 
-2026-09-22 · Kaon
+## 1. Executive summary
 
-## Executive summary
+FunType is a typing-speed trainer that runs entirely in one 45 KB HTML file, with no server, build step, install or account. A working build already exists; this proposal asks for approval to publish it and to build four follow-on phases in a fixed order.
 
-**FunType is a typing-speed trainer that runs entirely in a browser tab.** One HTML file of roughly 45 KB carrying its own markup, styles and logic. No server, no build step, no install, no account, no network call except two font requests. Open the file and type.
+The product competes on three things: honest measurement, an instant start, and a calm screen to practise in for twenty minutes. Each is a refusal rather than a feature: no login, no leaderboard, no telemetry. That makes them cheap to keep and hard for larger trainers to copy.
 
-A working build exists today at [github.com/KaonHew02/FunType](https://github.com/KaonHew02/FunType). It is not a prototype. Four drill modes, a complete metrics engine, per-configuration personal bests, eight themes and a finished brand mark are all shipped and working. What this document does is set down what was built, why each decision went the way it did, and what the next phases should be — so the project can be evaluated, handed to someone else, or picked up after a six-month gap without archaeology.
+### Project at a glance
 
-### What this proposal asks for
+| Item | Detail |
+| --- | --- |
+| Project name | FunType |
+| Type | Browser-based typing-speed trainer |
+| Platform | Any current desktop browser; opens from `file://` or a web host |
+| Deliverable | `index.html` (45,068 bytes) with markup, styles and logic in one file |
+| Technology | HTML5, CSS custom properties, vanilla JavaScript, inline SVG |
+| Data storage | Browser `localStorage`, key `funtype.v1`; nothing leaves the device |
+| Repository | [github.com/KaonHew02/FunType](https://github.com/KaonHew02/FunType) |
+| Status | Core build complete (first commit 11 Sep 2026); four roadmap phases proposed |
+| Running cost | RM 0 / USD 0 — static files on free GitHub Pages hosting |
+| Team | One developer |
 
-Not money and not headcount. It asks for a decision on three things:
+### Decisions requested
 
-1. **Whether to publish it properly.** A real URL instead of a file opened off disk. The repository already carries a `.nojekyll` marker, so GitHub Pages was anticipated but never switched on.
-2. **Which roadmap phases in §7 are worth building.** Every one of them spends some of the single-file simplicity that makes the current build good. That trade should be made deliberately, not drifted into.
-3. **Whether the measurement model in §4 is the one to commit to.** Personal bests become meaningless the moment the definitions shift underneath them, so this is the one decision that is expensive to reverse.
+1. **Publish it.** Switch on GitHub Pages so FunType has a real URL. The `.nojekyll` marker is already committed.
+2. **Approve the measurement model in section 5.** Personal bests stop being comparable if the definitions change, so this must be fixed before real users hold records.
+3. **Approve the roadmap in section 10.** Each phase spends some of the single-file simplicity, so the order should be chosen deliberately.
 
-### The shape of the bet
+## 2. Background and problem statement
 
-Typing trainers are a crowded category and FunType does not win by out-featuring the incumbents. It wins on three things: honest measurement, instant start, and being pleasant to sit inside for twenty minutes. Each of those is cheap to hold and awkward for a larger product to copy, because each is a *refusal* — no account, no leaderboard, no telemetry — rather than a feature. Refusals are the part of a product a competitor cannot add.
+People who want to type faster have many places to practise but few that measure them honestly. Existing trainers fall into two groups, and both get the measurement wrong in different ways.
 
-## Problem and opportunity
+### Background
 
-### The problem
+Typing speed is a daily productivity factor for developers, writers, students and support staff. The standard unit is words per minute (WPM), where one "word" is five characters. Improvement comes from short, regular drills with feedback the typist can trust.
 
-People who want to get faster at typing have plenty of places to practise and very few places to practise *honestly*. The category splits into two failure modes.
+### Problem statement
 
-**The gamified trainers** — the ones aimed at schools — wrap the drill in badges, streaks, cartoon races and mandatory accounts. The measurement is usually gross WPM, which counts every keystroke whether or not it was correct, so the number climbs as you get sloppier. That is precisely backwards: it rewards the habit you are trying to break.
-
-**The minimalist trainers** — the ones serious typists actually use — measure well but have drifted into being platforms. Accounts, leaderboards, friend lists, seasonal events, and a settings surface deep enough to need its own documentation. The drill is still in there, but you pass through a login and three menus to reach it, and your results are on someone else's server.
-
-Both share a quieter flaw: **the metric moves without telling you.** Turn punctuation on and your WPM drops several points, so the personal best you set last week is no longer comparable to today's run. Most trainers keep one "best" number across every configuration, which makes it a record of which settings were easiest rather than of how fast you type.
-
-### The opportunity
-
-There is room for a trainer that does three things and refuses the rest:
-
-- **Measures the way a skeptic would.** Net WPM as the headline, raw WPM beside it so the gap between them is visible, and a consistency score that exposes sprint-and-stall pacing. §4 sets out each definition.
-- **Starts instantly.** No login, no splash, no mode-selection wizard. The words are on screen before you have decided to practise, and typing begins the test.
-- **Keeps records that mean something.** Personal bests stored per exact configuration, so `time-30` and `time-30` with punctuation are separate records rather than one polluted number.
-
-### Who it is for
-
-The primary user is **someone who already types for a living** — developers, writers, support staff — who wants twenty focused minutes and a number they can trust, not a curriculum. The `code` mode exists specifically for this person: symbol and shift-key drilling on real JavaScript, Python and SQL, which is where a working developer's actual speed ceiling sits.
-
-A secondary user is **the privacy-conscious learner** who does not want a typing account. Everything FunType records stays in `localStorage` on one browser, on one machine, and never leaves it. That is a genuine differentiator and costs nothing to maintain — it is what *not* building a backend gets you for free.
-
-An explicit non-user is **the classroom**. Cohort management, assigned lessons and teacher dashboards are a different product with a different shape, and chasing them would destroy the properties above.
-
-## Scope — what FunType does today
-
-Everything in this section is built and working in the current build. Nothing here is aspirational.
-
-### The four drill modes
-
-| Mode | Amounts | What it trains |
+| Problem | Where it appears | Effect on the learner |
 | --- | --- | --- |
-| **time** | 15 / 30 / 60 / 120 seconds | Sustained rate against a clock. Words keep coming until time runs out. |
-| **words** | 10 / 25 / 50 / 100 words | A fixed target, so the run ends on an achievement rather than a buzzer. |
-| **text** | short / medium / long | Real paragraphs, for rhythm across sentences rather than disconnected words. |
-| **code** | js / py / sql | Symbol density and shift-key reach on real source. Where a working developer's ceiling actually sits. |
+| Gross WPM as the headline | Gamified, school-oriented trainers | Every keystroke counts, right or wrong, so the score rises as the typist gets sloppier |
+| Corrections are penalised | Many trainers charge backspace as an error | Learners stop fixing mistakes to protect their score, which trains the wrong habit |
+| Mandatory accounts and menus | Platform-style trainers | A login and several screens stand between the user and the first keystroke |
+| Results stored on a remote server | Most online trainers | Typing history and habits leave the user's device |
+| One "best" across all settings | Most trainers | Turning punctuation on lowers WPM, so the record reflects the easiest setting, not real skill |
+| Scores are easy to fake | Browser-based trainers without guards | A console script or an edited save can post an impossible score |
 
-The `time` and `words` modes draw from an inline list of **298 common English words** (288 unique), averaging 4.4 characters. The list is weighted toward short, high-frequency words, with a deliberate tail of typing-specific vocabulary — *keyboard, symbol, accuracy, rhythm, finger, motion* — so the drill occasionally rehearses its own subject matter.
+### Proposed solution
 
-### Two toggles
+FunType is a single-page trainer that measures the way a sceptic would and refuses everything else:
 
-- **`! punctuation`** adds capitals, commas, quotes and brackets.
-- **`# numbers`** mixes digits into the stream.
+- **Honest numbers.** Net WPM is the headline, raw WPM sits beside it, and a consistency score exposes uneven pacing.
+- **Instant start.** The words are on screen when the page opens; the first keystroke starts the test.
+- **Records that mean something.** A personal best is stored per exact configuration, so settings never pollute each other.
+- **Private by design.** Everything stays in the browser's own storage and is never sent anywhere.
+- **Guarded scores.** Scripted typing, pasting, edited saves and on-screen edits are all rejected.
 
-Both change the difficulty materially, which is why both are part of the personal-best key rather than a display setting. See §4.
+## 3. Objectives
 
-### Key bindings
+The main objective is a typing trainer whose scores a sceptical typist would accept as fair, and which starts in under two seconds. The specific objectives below each have a target that can be checked.
 
-| Key | Does |
+| # | Objective | Target | Status |
+| --- | --- | --- | --- |
+| O1 | Measure typing with clearly defined, published formulas | Net WPM, raw WPM, accuracy, consistency and a four-way character breakdown on every result | Built |
+| O2 | Start practice with no friction | First keystroke possible within 2 seconds of opening the page; no login or setup screen | Built |
+| O3 | Offer drills for different skills | 4 modes (time, words, text, code) and 2 toggles (punctuation, numbers) | Built |
+| O4 | Keep personal bests comparable | One record per exact configuration key, e.g. `time-30-p` | Built |
+| O5 | Protect user privacy | Zero network calls apart from the font request; no analytics, accounts or backend | Built |
+| O6 | Resist casual score tampering | Reject scripted keys, paste, runs over 400 WPM, edited saves and on-screen edits | Built (23 Sep 2026) |
+| O7 | Run anywhere without installation | One HTML file that works from `file://`, a USB drive or a web host | Built |
+| O8 | Make the tool pleasant for long sessions | 8 colour themes, reduced-motion support, clear focus states | Built |
+| O9 | Publish the app at a public URL | Live on GitHub Pages | Proposed (Phase 0) |
+| O10 | Turn measurement into coaching | Per-character error profile and targeted drills | Proposed (Phase 3) |
+
+## 4. Scope and target users
+
+FunType is a single-user, desktop, physical-keyboard trainer that keeps all data on the user's own browser. Anything that needs a server, an account or a classroom is out of scope.
+
+### In scope
+
+- Four drill modes with selectable length, plus punctuation and number toggles
+- Live timer or word counter and live WPM during a test
+- Results screen with headline figures, a pace chart and six detail facts
+- Personal bests per configuration, all-time best and a test counter
+- Eight colour themes, remembered between visits
+- Local storage with a tamper seal and field validation
+- Anti-cheat guards on input, results and saved data
+- Brand identity: keycap logo, wordmark and a small-size favicon
+- Publishing as a static site on GitHub Pages
+
+### Out of scope
+
+| Excluded | Reason |
 | --- | --- |
-| `tab` | Restart — the same words again |
-| `esc` | New test — fresh words |
+| Accounts, login and cloud sync | Would need a backend and would move user data off the device |
+| Global leaderboards and multiplayer races | Need a server that verifies each run; pull the product toward competition over practice |
+| Mobile or touch-first layout | The product trains a physical keyboard; phones are not the target |
+| Lessons, curriculum and teacher dashboards | A different product for classrooms |
+| Advertising and analytics | Contradict the privacy position |
+
+### Target users
+
+| User group | Need | How FunType serves it |
+| --- | --- | --- |
+| **Primary:** people who type for work (developers, writers, support staff) | Twenty focused minutes and a number they can trust | Honest metrics; `code` mode drills JavaScript, Python and SQL symbols |
+| **Secondary:** privacy-conscious learners and students | Practice without creating an account | No login; records never leave the browser |
+| **Secondary:** casual users | A quick, pleasant speed check | Opens instantly; eight themes |
+| **Not targeted:** schools managing classes | Cohorts, assignments, reports | Out of scope by design |
+
+## 5. Features and functional requirements
+
+The current build delivers four drill modes, a five-part measurement model, a results screen with a pace chart, and per-configuration personal bests. Everything in this section is implemented in `index.html` today.
+
+### 5.1 Drill modes and content
+
+| Mode | Lengths | Content source | What it trains |
+| --- | --- | --- | --- |
+| time | 15 / 30 / 60 / 120 s | Common-word list; 140 words at start, 60 more added when fewer than 30 remain | Sustained speed against a clock |
+| words | 10 / 25 / 50 / 100 words | Common-word list | Finishing a fixed target |
+| text | short / medium / long | 6 written passages (3 short, 2 medium, 1 long) about typing technique | Rhythm across real sentences |
+| code | js / py / sql | 9 real code lines, 3 per language | Symbols, brackets and shift-key reach |
+
+The word list holds 298 entries (288 unique, average 4.4 characters). It favours short, frequent words and ends with typing vocabulary such as *keyboard*, *rhythm* and *accuracy*. The same word never appears twice in a row.
+
+### 5.2 Toggles
+
+| Toggle | Effect | Frequency |
+| --- | --- | --- |
+| `! punctuation` | Capital after a sentence end; adds `, . ? ! ; :`, quotes, brackets and `'s` | About 27% of words get a mark |
+| `# numbers` | Replaces a word with a number | About 11% of words; 40% of those are up to 4 digits |
+
+Toggles apply to `time` and `words` modes. Both are part of the personal-best key because they change difficulty.
+
+### 5.3 Keyboard controls
+
+| Key | Action |
+| --- | --- |
+| `tab` | Restart with the same words |
+| `esc` | New test with fresh words |
+| `space` | Commit the current word (ignored on an empty word) |
+| `backspace` | Delete one character; can step back into a previous word only if it was typed wrong |
 | `ctrl` + `backspace` | Delete the whole current word |
-| `backspace` | Step back, including *into a previous word you got wrong* |
 | `enter` | On the results screen, start the next test |
+| Click on the logo | Restart (the logo is a working button) |
 
-That backspace behaviour is worth calling out. Most trainers lock a word once you have passed it. FunType lets you reverse into a word you botched, which matches how a real editor behaves and keeps the accuracy figure meaningful rather than punitive.
+### 5.4 Test flow
 
-### The results screen
-
-On finishing, the test view is replaced by a results panel carrying:
-
-- **Headline** — net WPM and accuracy, with a `new best · +N` badge when the run beats the stored record for that exact configuration, or `first record` when there was none.
-- **A chart** — net WPM and raw WPM plotted per second, with error marks where mistakes landed. The axis snaps to a sensible maximum from a fixed ladder rather than scaling to the data, so two runs can be compared by eye.
-- **Six facts** — test configuration, raw WPM, consistency, the character breakdown, elapsed time, and the personal best for that configuration.
-- **Two buttons** — *next test* (fresh words) and *repeat this text* (same words, to isolate improvement from luck of the draw).
-
-### Personal bests
-
-Records are stored **per exact configuration**. The key is composed from mode, amount and the active toggles — `time-30`, `words-25-p`, `code-sql` — so switching punctuation on starts a fresh record rather than polluting the old one. A best is claimed on net WPM only; accuracy is stored alongside it for context but does not gate the record.
-
-The header carries three live figures: best for the current configuration, all-time best across every configuration, and total tests run.
-
-## Measurement model
-
-This is the part of the product that has to be right, because it is the part users are trusting. Every definition below is implemented as stated.
-
-### Net WPM — the headline number
-
-```
-net wpm = correct characters ÷ 5 ÷ minutes
+```mermaid
+stateDiagram-v2
+    [*] --> Ready: page opens
+    Ready --> Running: first keystroke
+    Running --> Blurred: 8 s with no key
+    Blurred --> Running: click or any key
+    Running --> Results: time up or last word
+    Running --> Ready: tab or esc
+    Results --> Ready: enter, next test, repeat
 ```
 
-Five characters is the long-standing convention for one "word", which keeps the figure comparable to every other trainer. The consequential choice is **which characters count**: a correctly typed word also earns its trailing space, and a word left wrong does not. So a run of sloppy words does not quietly inflate the headline.
+The clock starts on the first keystroke, not on page load. While running, the settings bar fades out and the live counter shows time left (or words done) and current WPM. The blur is a focus prompt only; the clock keeps running.
 
-### Raw WPM — shown beside it, deliberately
+### 5.5 Results screen
 
-```
-raw wpm = every character typed ÷ 5 ÷ minutes
-```
+- **Headline:** net WPM and accuracy, with a badge: `new best · +N`, `first record`, or `not recorded · over 400 wpm`.
+- **Pace chart:** net and raw WPM per second, with an ✕ where errors landed. The y-axis snaps to a fixed ladder (20, 25, 40, 50 … 300) so runs compare by eye. Runs under 2 seconds show a "too short to chart" note.
+- **Six facts:** test settings, raw WPM, consistency, characters (correct / wrong / extra / missed), time in seconds, personal best.
+- **Two buttons:** *next test* (new words) and *repeat this text* (same words).
 
-Right or wrong, over the same clock. Raw is not a vanity metric here — it is displayed *next to* net specifically so the gap between the two lines is visible. A wide, growing gap is the signature of someone typing faster than their accuracy can support, which is the single most common way to plateau.
+### 5.6 Personal bests and records
 
-### Accuracy
+A best is stored per exact configuration. The key joins mode, length and toggles: `time-30`, `words-25-p`, `time-60-p-n`, `code-sql`. A new best needs a higher net WPM than the stored one; accuracy and date are kept alongside. The header shows three live chips: best for the current setting, all-time best, and tests run.
 
-```
-accuracy = keystrokes that hit the right character ÷ all keystrokes
-```
+### 5.7 Measurement model
 
-**Backspaces are free.** They are not counted as keystrokes and not counted as errors. This is a deliberate departure from trainers that penalise correction: the goal is to train accurate typing, not to train people into leaving mistakes uncorrected because fixing them costs score.
+Net WPM counts only correct characters; a correctly typed word also earns its trailing space.
 
-### Consistency
-
-```
-consistency = 100 × (1 − stdev / mean)
+```math
+\text{net WPM} = \frac{\text{correct characters} / 5}{\text{minutes elapsed}}
 ```
 
-Computed across per-second samples of raw pace, clamped to 0–100. Each second the engine records how many characters were typed in that second and converts it to a WPM-equivalent; consistency is how even that series was.
+Raw WPM counts every character typed, right or wrong, over the same clock. It is shown beside net WPM so the gap is visible.
 
-This is the most diagnostic number on the screen and the least understood. **High speed with low consistency means sprinting and stalling** — bursts on familiar words, freezing on unfamiliar ones. Two typists with identical WPM and identical accuracy can have very different consistency, and the one with the lower score has the larger, easier gain available: they do not need to get faster, they need to stop stopping.
+```math
+\text{raw WPM} = \frac{\text{all characters typed} / 5}{\text{minutes elapsed}}
+```
 
-### The character breakdown
+Accuracy counts keystrokes that hit the right character. Backspaces are free: they are neither keystrokes nor errors, so fixing a mistake is never punished.
 
-Reported as `correct / wrong / extra / missed`.
+```math
+\text{accuracy} = \frac{\text{correct keystrokes}}{\text{correct keystrokes} + \text{wrong keystrokes}} \times 100
+```
 
-| Term | Means |
-| --- | --- |
-| **correct** | Hit the right character in the right place |
-| **wrong** | Hit the wrong character |
-| **extra** | Typed past the end of a word |
-| **missed** | Hit space too early, leaving characters untyped |
+Consistency measures how even the per-second pace was. Each second, characters typed × 12 gives a WPM-equivalent sample; the result is clamped to 0–100.
 
-Splitting *extra* from *missed* matters because they are opposite faults with opposite fixes. Consistent *missed* counts mean you are anticipating the word boundary; consistent *extra* counts mean you are not reading ahead far enough.
+```math
+\text{consistency} = 100 \times \left(1 - \frac{\sigma}{\mu}\right)
+```
 
-### Why this model is hard to change later
+| Character class | Meaning | What it tells the typist |
+| --- | --- | --- |
+| correct | Right character in the right place | — |
+| wrong | Wrong character in a position | Finger accuracy |
+| extra | Typed past the end of a word (capped at 12) | Not reading ahead |
+| missed | Pressed space too early | Anticipating the word boundary |
 
-Every stored personal best was produced under these exact definitions. Changing any of them — counting the trailing space differently, charging for backspaces, altering the consistency window — silently invalidates every record a user holds, with no way to recompute them because the raw keystroke history is not retained.
+Changing any formula later would silently break every stored best, because raw keystrokes are not kept. Any change must bump the storage key from `funtype.v1` to `funtype.v2`.
 
-**This is the one decision in the proposal that is expensive to reverse.** If the model is to change, it should change before publication, and the storage key should be versioned from `funtype.v1` to `funtype.v2` so old records are retired rather than misread.
+### 5.8 Functional requirements
 
-## Technical architecture
+| ID | Requirement | Status |
+| --- | --- | --- |
+| FR-01 | The user can choose one of four modes and one length per mode | Built |
+| FR-02 | The user can switch punctuation and numbers on or off | Built |
+| FR-03 | The test starts on the first keystroke with no start button | Built |
+| FR-04 | Correct, wrong and extra characters are coloured as they are typed | Built |
+| FR-05 | An animated caret follows the typing position; lines scroll after the second row | Built |
+| FR-06 | Live time left (or word count) and live WPM show during a run | Built |
+| FR-07 | The results screen shows the metrics, chart and facts in 5.5 | Built |
+| FR-08 | A personal best is saved per configuration and flagged on the results | Built |
+| FR-09 | Settings, theme, bests and test count persist between visits | Built |
+| FR-10 | The user can pick one of eight themes from the footer | Built |
+| FR-11 | `tab`, `esc`, `enter`, `ctrl` + `backspace` work as in 5.3 | Built |
+| FR-12 | Scripted keys, paste and drag-and-drop cannot enter text | Built |
+| FR-13 | Runs over 400 WPM are shown but never saved as a best | Built |
+| FR-14 | Edited saves are detected and discarded | Built |
+| FR-15 | On-screen edits to scores are reverted immediately | Built |
 
-### The central constraint
+## 6. Non-functional requirements
 
-**One file, no build.** `index.html` is 45,068 bytes and contains the markup, the stylesheet and the whole application in a single document. There is no bundler, no package manager, no `node_modules`, no transpile step and no framework. Vanilla JavaScript against the DOM.
+The app must load in under 2 seconds, work without a network when opened as a file, and never send user data anywhere. The table sets a checkable target for each quality.
 
-This is a constraint, not an accident, and it buys four things:
+| ID | Quality | Requirement | How it is met |
+| --- | --- | --- | --- |
+| NFR-01 | Performance | Page ready to type within 2 s; no visible lag per keystroke | 45 KB file, no framework, only the current word is repainted per key |
+| NFR-02 | Portability | Works from `file://`, a USB drive, email attachment or web host | Single self-contained file; favicon embedded as a `data:` URI |
+| NFR-03 | Compatibility | Current Chrome, Edge, Firefox and Safari | Uses only settled features: `localStorage`, CSS custom properties, flexbox, grid, inline SVG |
+| NFR-04 | Privacy | No personal data leaves the device | No backend, no analytics, no cookies; only request is Google Fonts |
+| NFR-05 | Reliability | App still starts if storage is blocked or a save is corrupt | Every read and write in `try`/`catch`; bad fields fall back to defaults |
+| NFR-06 | Resilience | Usable if the font server is unreachable | Fallback fonts: Segoe UI and Cascadia Mono / `ui-monospace` |
+| NFR-07 | Accessibility | Keyboard-only operation; screen-reader labels; motion can be reduced | `aria-pressed` on toggles, labelled theme buttons and input, chart has an `aria-label`, `prefers-reduced-motion` respected, 2 px focus ring |
+| NFR-08 | Usability | A first-time user can start without instructions | Words are on screen at load; key hints in the footer |
+| NFR-09 | Responsiveness | Readable down to phone width | At 680 px or less the results stack and key hints hide; the typing area font scales with `clamp()` |
+| NFR-10 | Input support | Works with IME and on-screen keyboards | A hidden input mirrors typed text when keys report as "Unidentified" |
+| NFR-11 | Security | Stored data cannot inject markup | All stored values are validated and escaped before display |
+| NFR-12 | Maintainability | Whole program readable in one sitting | About 900 lines, vanilla JavaScript, commented by section |
+| NFR-13 | Cost | No running cost | Static hosting on free GitHub Pages |
 
-- The app opens from a `file://` path, a USB stick, an email attachment or a web host, identically.
-- There is no toolchain to rot. A build that works today works in five years, because there is nothing to reinstall.
-- The whole program is readable in one sitting, which is why the measurement model in §4 can be audited rather than trusted.
-- Deployment is a file copy.
+## 7. System design and technology stack
 
-The cost is real and is priced into §7: every roadmap phase that adds meaningful surface area puts pressure on the single-file rule.
+FunType is a client-only application: one HTML file holds the markup, styles and about 680 lines of vanilla JavaScript, with the browser's `localStorage` as its only database. There is no server, build step or framework.
 
-### Files
+### 7.1 Technology stack
 
-| File | What it is |
-| --- | --- |
-| `index.html` | **The app.** The one to edit. |
-| `funtype.html` | The same page minus the doctype/html/head/body wrapper — the copy published as a Claude Artifact. Regenerated, never hand-edited. |
-| `logo.svg` | Full lockup: keycap mark plus wordmark. Needs Gabarito to render the text correctly. |
-| `logo-mark.svg` | Icon only, pure geometry, safe anywhere. |
-| `logo-favicon.svg` | The mark retuned for 16–24px. Used below about 28px. |
-| `README.md` | Modes, keys, the measurement definitions, and the design notes. |
-| `.nojekyll` | GitHub Pages marker — present, but Pages is not switched on. |
+| Layer | Technology | Notes |
+| --- | --- | --- |
+| Structure | HTML5 | Semantic `header`, `main`, `section`, `footer` |
+| Styling | CSS3 with custom properties | All colours are tokens, so a theme is a data change |
+| Logic | Vanilla JavaScript (ES2020, strict mode) | One self-invoking function; no global variables leak |
+| Charts | Inline SVG built at runtime | No charting library |
+| Storage | Web Storage API (`localStorage`) | One key, `funtype.v1` |
+| Anti-tamper | `MutationObserver`, `Event.isTrusted`, 53-bit string hash | See section 8 |
+| Fonts | Google Fonts: Gabarito, JetBrains Mono | The only external request; preconnected |
+| Version control | Git, hosted on GitHub | [KaonHew02/FunType](https://github.com/KaonHew02/FunType) |
+| Hosting | GitHub Pages (static) | `.nojekyll` already committed |
 
-### The artifact copy
+### 7.2 Architecture
 
-`funtype.html` is generated from `index.html` by stripping the first five lines and the last two:
+```mermaid
+flowchart LR
+    K[Keyboard input] --> G{Trusted key?}
+    G -- no --> X[Ignored]
+    G -- yes --> T[Typing engine]
+    T --> S[(Test state)]
+    S --> R[Word and caret render]
+    C[1 s ticker] --> S
+    S --> M[Scoring and results]
+    M --> B[(Bests in localStorage)]
+    B --> H[Records bar]
+```
 
-```bash
+Keys pass the trust check, update the test state and repaint only the affected word. A one-second ticker samples the state for the live counter and chart. When the test ends, scoring writes the result and any new best to sealed storage.
+
+### 7.3 Code modules inside `index.html`
+
+| Module | Main functions | Responsibility |
+| --- | --- | --- |
+| Content | `WORDS`, `TEXTS`, `CODE`, `THEMES`, `AMOUNTS` | Word list, passages, code lines, theme palettes, mode lengths |
+| State | `S`, `BESTS`, `TESTS` | Current test, records and counters |
+| Storage | `load`, `save`, `sealOf` | Read, validate, seal and write the save |
+| Theme | `applyTheme`, `buildThemes` | Set 11 CSS tokens; build the swatch row |
+| Word generation | `plainWords`, `decorate`, `buildWords`, `extendWords` | Pick words; add punctuation and numbers |
+| Rendering | `renderWords`, `paintWord`, `moveCaret`, `scrollLines` | Draw words, colour characters, move caret, scroll lines |
+| Typing | `typeChar`, `commitWord`, `backspace` | Apply each key to the state |
+| Clock and scoring | `startTest`, `tick`, `tally`, `consistency`, `finish` | Timing, samples and every metric |
+| Results | `showResults`, `chartSVG`, `renderRecords`, `draw` | Results screen, chart, records bar, on-screen guard |
+| Lifecycle and input | `newTest`, `focusTest`, key and input listeners | Restarts, focus, idle blur, keyboard handling |
+
+### 7.4 Project files
+
+| File | Size | Purpose |
+| --- | --- | --- |
+| `index.html` | 45,068 B | The application; the file to edit |
+| `funtype.html` | 44,921 B | Same page without the outer HTML wrapper, published as a Claude Artifact |
+| `logo.svg` | 776 B | Full logo: keycap mark and wordmark |
+| `logo-mark.svg` | 530 B | Icon only, pure geometry |
+| `logo-favicon.svg` | 515 B | Mark retuned for 16–24 px |
+| `README.md` | 5,468 B | Modes, keys, formulas, tamper guards, design notes |
+| `PROPOSAL.md` | ~38 KB | This proposal |
+| `.nojekyll` | 0 B | Tells GitHub Pages to serve files as-is |
+
+`funtype.html` is regenerated by stripping the first 5 and last 2 lines of `index.html`. The recipe depends on line counts, so nothing may be inserted above line 6.
+
+```
 sed '1,5d' index.html | sed '$d' | sed '$d' > funtype.html
 ```
 
-This recipe is **line-count sensitive**, which is a sharp edge worth knowing about. Anything inserted into the first five lines silently changes what gets stripped. When the favicon was added on 2026-09-22 it was deliberately placed on line 7, below the `<title>`, so the strip still cuts exactly the wrapper and nothing else.
+### 7.5 Data design
 
-### Storage
+All persistent data is one JSON object in `localStorage` under `funtype.v1`:
 
-Everything persistent lives in `localStorage` under the single key **`funtype.v1`**:
-
-```json
+```
 {
   "mode": "time",
-  "amount": { "time": "30", "words": "25", "text": "short", "code": "js" },
+  "amount": { "time": "30", "words": "25", "text": "medium", "code": "js" },
   "punctuation": false,
   "numbers": false,
   "theme": "dusk",
@@ -210,171 +333,281 @@ Everything persistent lives in `localStorage` under the single key **`funtype.v1
 }
 ```
 
-`seal` is a hash of every other field, so a save edited by hand no longer matches and is discarded. Each field is also validated against the values the app can produce before it is used. Both are deterrents against casual tampering, not protection against someone who reads the source — see the README's *Tamper guards*.
-
-Both the read and the write are wrapped in `try`/`catch`. If storage is blocked — private windows, hardened browser settings — the app runs normally for the session and simply forgets afterwards, rather than failing to start. The `v1` in the key is the version handle described in §4.
-
-**Nothing is transmitted.** There is no analytics, no error reporting, no backend. Records stay on one browser on one machine.
-
-### Dependencies
-
-Exactly one external dependency: a Google Fonts stylesheet supplying **Gabarito** (interface) and **JetBrains Mono** (everything you type). Both are preconnected. If the request fails, the CSS falls back to Segoe UI and Cascadia Mono / `ui-monospace` and the app remains fully usable — slightly off-brand, never broken.
-
-The favicon is embedded as a `data:` URI rather than a file reference, so the single-file promise survives even if `index.html` is moved somewhere on its own. The results chart is inline SVG generated at runtime; no charting library.
-
-### Browser support
-
-Any current evergreen browser. The app leans on `localStorage`, CSS custom properties, flexbox and inline SVG — all long-settled. There is no polyfill layer and none is warranted. The layout is desktop-first by nature: this is a physical-keyboard product, and §9 states mobile explicitly out of scope.
-
-## Design system and brand
-
-### Token model
-
-Every colour in the app resolves through a CSS custom property. There are no hardcoded hex values in component rules, which is what makes theming a data change rather than a stylesheet rewrite. A theme is a plain object of eleven values, applied by setting the properties on `:root`.
-
-| Token | Role |
-| --- | --- |
-| `--bg` / `--surface` / `--raise` | Page, card, elevated card |
-| `--text` / `--sub` / `--sub-soft` | Typed text, untyped text, faint text |
-| `--accent` / `--accent-deep` / `--accent-ink` | Caret and brand; keycap skirt; the colour that sits *on* accent |
-| `--error` / `--error-extra` | Wrong characters; characters typed past a word's end |
-
-### The eight themes
-
-`dusk` (default), `daylight`, `matcha`, `cobalt`, `nordfall`, `bubblegum`, `mono`, `terminal`.
-
-Six are dark and two are light, and the set is deliberately not eight variations on one idea — `bubblegum` is pink-on-cream, `terminal` is phosphor green on near-black, `mono` is greyscale. Because every theme supplies its own `--accent-ink` that contrasts hard against its `--accent`, brand elements recolour correctly in all eight without per-theme overrides.
-
-Chart series are fixed at `#d8792e` (net), `#6189e0` (raw) and `#cf4a66` (errors), checked for colour-blind separation against both the dark and light surfaces. They do not follow the theme, because a chart legend that changes meaning between themes is a chart you cannot read twice.
-
-### Typography
-
-**Gabarito** for the interface — a warm geometric sans that keeps the chrome from feeling clinical. **JetBrains Mono** for everything you actually type, so character widths are uniform and the caret advances predictably. The distinction is load-bearing: a proportional face in the typing area would make the caret jump unevenly and the per-character error marks would not line up.
-
-### The mark
-
-The logo is a **keycap whose legend is a text caret** — the same caret you chase across the screen while typing. It blinks on the same 1.05s beat as the real one, and the cap face depresses 2.6px when pressed, because the mark is also the restart button. It is the rare logo that is a working control.
-
-**Redrawn 2026-09-22.** The original placed the caret inside a dark inset "dish", which left the caret about 10% of the frame. At the 38px it ships at in the header it collapsed into a smudge — the mark read as an orange square with a hole in it. The redraw removes the dish, puts the caret in `--accent-ink` directly on the cap, and grows it to 63% of the cap height as an I-beam: four shapes down to two.
-
-A separate `logo-favicon.svg` handles small sizes, with the cap pushed out to the edges and the caret thickened, because at 16px the 4px skirt and the thin serifs silt up. The swap happens at about 28px.
-
-The wordmark is Gabarito ExtraBold at `-0.022em` tracking, `Fun` in accent and `Type` in text colour. In `logo.svg` it is **live text, not outlined paths** — correct inside the app, which serves Gabarito, but it must be outlined before the file goes to any context that will not have the font.
-
-## Roadmap
-
-Phases are ordered by *ratio of value to simplicity spent*. Each one names what it costs, because the single-file constraint in §5 is the project's main asset and every phase draws on it.
-
-### Phase 0 — Publish it · *recommended, do this first*
-
-Switch on GitHub Pages and give FunType a URL. The `.nojekyll` marker is already committed, so this is a repository setting and a link, not a code change.
-
-**Why first:** everything else in this roadmap is worth more once the thing is reachable, and worth very little while it is a file on one laptop. It is also the only phase that costs nothing architecturally.
-
-**Cost:** none. **Effort:** minutes.
-
-### Phase 1 — Content depth
-
-The word list is 298 entries with 9 duplicates, and there are three text passages and three code snippets. That is enough to prove the modes and thin enough that a regular user will start recognising material, which quietly inflates scores.
-
-- De-duplicate and expand the word list toward ~1,000 entries.
-- Add passages, and more code languages — TypeScript, Go, shell.
-- Consider a *hard words* toggle drawing from a low-frequency list.
-
-**Why here:** it directly protects the integrity of the measurements in §4, and it is pure data — no new UI, no new state.
-
-**Cost:** file size. A 1,000-word list plus more passages pushes `index.html` past ~60 KB. Still trivially servable, but it is the first real pressure on the one-file rule.
-
-### Phase 2 — History and trend
-
-Today a run is compared only against the single best for its configuration. Keep the last *n* results per configuration and show a trend line, so a user can see a plateau or a regression rather than only a high-water mark.
-
-**Why here:** it is the most-requested capability of any trainer and the storage model already has a natural home for it.
-
-**Cost:** a schema change to `funtype.v1`, which needs a migration path or a version bump. Records must survive it — see §8.
-
-### Phase 3 — Per-character weakness analysis
-
-The engine already knows every keystroke that missed. Aggregating those into a per-character error profile would let FunType say *you lose most of your time on `;`, `p` and capitalised words* — and then generate a drill weighted toward exactly those characters.
-
-**Why here:** this is the genuine differentiator. It converts the measurement work in §4 from a scoreboard into coaching, and no amount of leaderboards substitutes for it.
-
-**Cost:** the largest of the four. New persisted state, a new results panel, and a generator that biases word selection. This is the phase most likely to break the single-file rule, and the one where breaking it would be justified.
-
-### Phase 4 — Shareable results · *optional*
-
-Encode a finished run into a URL fragment so a result can be linked without a server or an account.
-
-**Why last:** pleasant, not load-bearing, and it is the phase most at risk of dragging the product toward the leaderboard shape §2 deliberately rejects.
-
-**Cost:** low technically. The risk is to positioning, not to code.
-
-### Explicitly deferred
-
-Accounts and cloud sync, multiplayer races, a mobile layout, lesson plans or a curriculum, and teacher/cohort tooling. Each contradicts something in §2. They are listed so that deferring them reads as a decision rather than an oversight.
-
-## Risks, constraints and open questions
-
-### Risks
-
-| Risk | Impact | Mitigation |
+| Field | Type | Valid values |
 | --- | --- | --- |
-| **Records are on one machine only** | A user who clears site data, switches browser or replaces a laptop loses every personal best, with no recovery | Accepted — it is the price of having no backend, and §2 treats it as a feature. Mitigate with an export/import of the `funtype.v1` blob, which is far cheaper than accounts |
-| **Changing the metrics invalidates every stored best** | Silent corruption: old records compared against new definitions, with no keystroke history to recompute from | Settle §4 before publication. Any later change bumps the key to `funtype.v2` and retires old records honestly rather than misreading them |
-| **Content is small enough to memorise** | 298 words with 9 duplicates, 3 passages, 3 snippets — a regular user starts recognising material, which inflates scores and hides real plateaus | Roadmap Phase 1, which is why it sits ahead of the more interesting work |
-| **Google Fonts is a single point of failure** | Offline or blocked, the app renders in fallback faces | Already handled: the stack degrades to Segoe UI / Cascadia Mono and stays fully usable. Only the brand suffers |
-| **The `sed` regeneration step is line-count sensitive** | Editing the first five lines of `index.html` silently corrupts `funtype.html`, and the corruption is not obvious | Documented in `README.md` and in §5. A more robust marker-based strip would remove the hazard entirely |
-| **Single maintainer, no tests** | There is no automated check that a change to the metrics engine did not alter a number | Live with it at this scale, but a small set of fixtures — a known keystroke sequence with known expected outputs — would protect exactly the code that matters most |
+| `mode` | string | `time`, `words`, `text`, `code` |
+| `amount` | object | One allowed length per mode (section 5.1) |
+| `punctuation`, `numbers` | boolean | `true` / `false` |
+| `theme` | string | One of the 8 theme names |
+| `bests` | object | Key matches `mode-length[-p][-n]`; `wpm` integer 0–400, `acc` integer 0–100, `at` a timestamp |
+| `tests` | integer | Positive safe integer |
+| `seal` | string | Hash of all other fields (section 8) |
 
-### Known wrinkles in the current build
+## 8. Score integrity and anti-tampering
 
-Minor, and none affect correctness of the headline numbers:
+Six guards, shipped on 23 Sep 2026, stop the common ways of faking a score: scripted typing, pasting, impossible speeds, edited or injected saves, and on-screen edits. They are deterrents, not locks, because the code runs in the user's own browser.
 
-- The word list holds **9 duplicate entries** (`door` appears three times; `high`, `small`, `late`, `water`, `build`, `start`, `story` and `watch` twice each). Harmless, but it skews frequency slightly and is untidy.
-- `consistency()` opens with a filter that is a no-op — it retains every element and copies the array, nothing more. Dead code rather than a bug.
-- The app is desktop-shaped with no mobile layout. Reasonable for a physical-keyboard product, but the page does not currently *say* so on a small screen.
+### 8.1 Threats and guards
 
-### Open questions
+| Threat | How someone would try it | Guard | Result |
+| --- | --- | --- | --- |
+| Auto-typer script | Dispatch fake key events from the console | Every key and input event must have `isTrusted = true` | Fake keys are ignored |
+| Paste or drop | Paste the visible words into the hidden input | `paste` and `drop` events are cancelled | Nothing is entered |
+| Impossible run | Any trick that yields an absurd speed | Runs over 400 WPM are labelled `not recorded` | Never becomes a personal best |
+| Edited save | Change a number in DevTools → Local Storage | Save carries a `seal`; a mismatch discards the whole save | Records reset to empty |
+| Injected values | Put markup or odd types into the save | Each field is checked against values the app itself can write; output is HTML-escaped | Bad values are dropped; no markup runs |
+| On-screen edit | Change the WPM with Inspect Element | A `MutationObserver` restores the records bar and results screen | Edit is reverted at once |
 
-1. **Should consistency be surfaced more prominently?** §4 argues it is the most diagnostic number available, yet it sits in the secondary facts row while accuracy gets headline treatment. That may be the wrong emphasis.
-2. **Should a personal best require a minimum accuracy?** Today a best is claimed on net WPM alone. A fast, careless run can set a record that a slower, cleaner run cannot beat — arguably the exact behaviour §2 criticises in other trainers.
-3. **How much content is enough** before memorisation stops mattering? Phase 1 proposes ~1,000 words, but that figure is an estimate rather than a measured threshold.
-4. **Is the single-file constraint worth keeping through Phase 3?** It should be an explicit decision at that point, not a default that quietly breaks.
+### 8.2 How the seal works
 
-## Success measures and delivery
+1. On save, the app serialises every field except `seal` to JSON.
+2. It prefixes the text with `funtype-seal:` and runs a 53-bit, two-lane multiplicative string hash.
+3. The hash is stored in base 36 as `seal`.
+4. On load, the hash is recomputed. Any difference means the save was edited, so it is replaced with a clean one.
 
-### What good looks like
+Saves written before sealing existed are accepted once, then sealed, but only if every record is older than 23 Sep 2026, 01:00 UTC. A hand-made unsealed save with a recent record is rejected.
 
-FunType has no analytics and this proposal does not suggest adding any — which rules out the usual engagement metrics and is a deliberate constraint, not an oversight. The measures below are therefore ones a single maintainer can judge honestly without instrumenting users.
+### 8.3 Why validation matters on GitHub Pages
+
+On GitHub Pages, every repository under the same account shares one origin, and so one `localStorage`. Another project on that account could write to `funtype.v1`. Validating and escaping every stored value keeps such data from breaking the app or injecting markup.
+
+### 8.4 Known limits
+
+- The source is public, so a determined person can compute a valid seal or run a modified copy.
+- Any such cheat only changes that person's own screen, because nothing is ever sent anywhere.
+- A trusted, shared leaderboard would need a server that re-checks each run. That is out of scope.
+
+## 9. UI/UX and visual identity
+
+The interface is one calm screen where the words are the largest thing on it and everything else fades while you type. The brand is a keycap whose legend is a text caret, and it doubles as the restart button.
+
+### 9.1 Screen layout
+
+| Area | Contents | Behaviour |
+| --- | --- | --- |
+| Header | Logo and wordmark (left); three record chips (right) | Logo click restarts; chips update after each test |
+| Command bar | Toggles · modes · lengths | Fades out while a test runs, returns on finish |
+| Stage | Live counter, three visible lines of words, *restart test* button | Lines scroll so the current line stays second from the top |
+| Results (replaces stage) | Headline, chart, six facts, two buttons | Shown when a test ends |
+| Footer | Key hints, 8 theme swatches, tagline *"train the hands, the words follow."* | Key hints hide on narrow screens |
+
+### 9.2 Interaction details
+
+- **Caret:** a 3 px accent bar that glides between characters in 85 ms and blinks every 1.05 s while waiting.
+- **Character colours:** untyped in `--sub`, correct in `--text`, wrong in `--error`, extra in `--error-extra`; a wrong word gets an underline once passed.
+- **Focus:** after 8 s without a key, the words blur with the prompt "click here or press any key to focus".
+- **Motion:** all animation and transitions switch off under the system's reduced-motion setting.
+
+### 9.3 Typography
+
+| Use | Typeface | Fallback | Why |
+| --- | --- | --- | --- |
+| Interface | Gabarito (400–800) | Segoe UI, system-ui | Warm geometric sans; keeps the chrome friendly |
+| Everything typed, all numbers | JetBrains Mono (300–700) | Cascadia Mono, ui-monospace | Equal character widths so the caret moves evenly and error marks line up |
+
+Numbers use tabular figures so digits do not shift as scores change.
+
+### 9.4 Colour themes
+
+Every colour is one of 11 CSS tokens, so a theme is a small data object. Each theme supplies its own `accent-ink` for text on the accent, so the logo recolours correctly in all eight.
+
+| Theme | Type | Background | Accent |
+| --- | --- | --- | --- |
+| dusk (default) | Dark | `#16161e` | `#ff9e64` apricot |
+| daylight | Light | `#eceef4` | `#cf6a2c` |
+| matcha | Dark | `#1b2420` | `#9ccf5e` |
+| cobalt | Dark | `#0f1729` | `#5ec8ff` |
+| nordfall | Dark | `#2e3440` | `#88c0d0` |
+| bubblegum | Light | `#fdf0f3` | `#e5527e` |
+| mono | Dark | `#0e0e10` | `#f5f5f5` |
+| terminal | Dark | `#050a05` | `#35ff4d` |
+
+Chart colours stay fixed across themes so the legend always means the same thing: net `#d8792e`, raw `#6189e0`, errors `#cf4a66`. They were checked for colour-blind separation on dark and light surfaces.
+
+### 9.5 Logo and brand mark
+
+- **Concept:** a keycap whose legend is an I-beam text caret, the same caret the user chases while typing.
+- **Construction:** a 48 × 48 grid; cap face in `--accent`, a skirt in `--accent-deep` 5 px below it, the caret in `--accent-ink`.
+- **Motion:** the caret blinks on the same 1.05 s beat as the typing caret; the cap face sinks 2.6 px on hover or press.
+- **Redesign (22 Sep 2026):** the first version put the caret in a dark inset "dish" and it filled only about 10% of the frame, blurring into a smudge at 38 px. The redraw removed the dish and grew the caret to 63% of cap height.
+- **Small sizes:** `logo-favicon.svg` pushes the cap to the edges and thickens the caret; use it below about 28 px.
+- **Wordmark:** Gabarito ExtraBold, tracking −0.022 em, "Fun" in accent and "Type" in text colour. In `logo.svg` it is live text and must be outlined before use where Gabarito is not installed.
+
+## 10. Methodology, milestones and timeline
+
+The project follows an iterative, incremental method: each phase is a small, shippable change that is built, checked in the browser and committed on its own. The core build is done; the five proposed phases below run from late September to mid-December 2026.
+
+### 10.1 Method
+
+1. **Define** the change and its effect on the measurement model and storage.
+2. **Build** it in `index.html`, keeping the single-file rule unless a phase justifies breaking it.
+3. **Check** it by hand in the browser: all modes, all eight themes, and the tamper guards.
+4. **Regenerate** `funtype.html`, update `README.md`, and commit with a descriptive message.
+5. **Publish** by pushing to GitHub; Pages serves the new version.
+
+### 10.2 Completed milestones
+
+| Date | Milestone | Commit |
+| --- | --- | --- |
+| 23 Sep 2026 | Score guards: trusted-key check, paste block, 400 WPM cap, sealed save, on-screen guard | `a14402c` |
+| 22 Sep 2026 | Markdown project proposal added to the repository | `6465d3b` |
+| 22 Sep 2026 | Logo redrawn so the caret survives small sizes; favicon added | `d812abf` |
+| 11 Sep 2026 | First complete build: 4 modes, metrics, results chart, bests, 8 themes | `2432633` |
+
+### 10.3 Proposed phases
+
+| Phase | Work | Effort | Target date |
+| --- | --- | --- | --- |
+| 0 — Publish | Switch on GitHub Pages; share the URL | Under 1 hour | Sep 25, 2026 |
+| Decision point | Settle the open questions on metrics (section 12) before real users hold records | 1 review | Sep 30, 2026 |
+| 1 — Content depth | De-duplicate and grow the word list to about 1,000; add passages and TypeScript, Go and shell code | 1–2 sessions | Oct 9, 2026 |
+| 2 — History and trend | Keep the last results per configuration; draw a trend line; migrate storage | 2–3 sessions | Oct 23, 2026 |
+| 3 — Weakness analysis | Per-character error profile and drills weighted to weak keys | 5–8 sessions | Nov 27, 2026 |
+| 4 — Shareable results (optional) | Encode a finished run in a URL fragment, no server | 1–2 sessions | Dec 11, 2026 |
+
+A session means one focused working block of about 2–3 hours. Dates assume one developer working part-time.
+
+## 11. Resources, budget and tools
+
+The required budget is RM 0: every tool and service is free, and the only real cost is about 18–45 hours of one developer's time for phases 0–4.
+
+### 11.1 People
+
+| Role | Who | Responsibility |
+| --- | --- | --- |
+| Developer, designer and maintainer | Project owner (1 person) | Code, design, testing, documentation, publishing |
+| AI coding assistant | Claude Code | Pair-programming, review and documentation; co-author on all four commits |
+| Testers | Owner plus a few volunteer typists | Hands-on checks and feedback on fairness of scores |
+
+### 11.2 Tools
+
+| Tool | Use | Cost |
+| --- | --- | --- |
+| Windows 11 laptop with a physical keyboard | Development and testing | Existing |
+| Git and GitHub | Version control and repository hosting | Free (public repository) |
+| GitHub Pages | Static hosting | Free |
+| Chrome, Edge, Firefox | Cross-browser testing and DevTools | Free |
+| Google Fonts | Gabarito and JetBrains Mono | Free |
+| Claude Code | AI-assisted development | Existing subscription |
+
+### 11.3 Budget
+
+| Item | Cost | Notes |
+| --- | --- | --- |
+| Hosting | RM 0 | GitHub Pages |
+| Fonts and libraries | RM 0 | Open-licence fonts; no libraries used |
+| Hardware | RM 0 | Existing laptop |
+| Developer time | RM 0 (self-funded) | 9–15 sessions × 2–3 h ≈ 18–45 h |
+| Custom domain (optional) | About USD 10–15 a year (approximate) | Only if a name other than `github.io` is wanted |
+| **Total required** | **RM 0** |  |
+
+## 12. Risks and mitigations
+
+The biggest risk is changing the scoring formulas after users hold records, because old bests cannot be recalculated. Most other risks are small and already have a planned fix.
+
+### 12.1 Risk register
+
+| Risk | Likelihood | Impact | Mitigation |
+| --- | --- | --- | --- |
+| Scoring formulas change after launch | Low | High | Settle section 5.7 before publishing; any later change bumps the key to `funtype.v2` |
+| Records exist on one browser only; clearing data loses them | High | Medium | Add export and import of the save file; accepted as the price of no backend |
+| Content is small enough to memorise, inflating scores | High | Medium | Phase 1 grows the word list, passages and code |
+| No automated tests on the scoring code | Medium | High | Add fixture tests: fixed keystroke sequences with known expected scores |
+| Feature growth breaks the single-file rule | Medium | Medium | Make it an explicit decision at Phase 3 |
+| `funtype.html` regeneration depends on line counts | Medium | Medium | Replace the `sed` recipe with a marker-based strip |
+| Other repos on the same GitHub Pages origin write to storage | Low | Medium | Seal and field validation (done) |
+| A determined user fakes a score | Medium | Low | Accepted: it only affects their own screen; no shared leaderboard |
+| Google Fonts unreachable | Low | Low | Fallback fonts keep the app fully usable (done) |
+| Single maintainer becomes unavailable | Medium | Medium | README, this proposal and readable single-file code allow hand-over |
+
+### 12.2 Known issues in the current build
+
+| Issue | Effect | Planned fix |
+| --- | --- | --- |
+| Word list has 10 duplicate entries (`door` ×3; `high`, `small`, `late`, `water`, `build`, `start`, `story`, `watch` ×2) | Slightly skews word frequency | De-duplicate in Phase 1 |
+| Punctuation and numbers toggles still split the record key in `text` and `code` modes, though they do not change that content | `code-js` and `code-js-p` are separate records for identical text | Ignore toggles in the key for those modes, or hide the toggles there |
+| `consistency()` starts with a filter that keeps every element | Dead code, no wrong result | Remove it |
+| The "too short to chart" note says 15 seconds, but the chart appears after 2 | Minor wording mismatch | Align the message with the rule |
+| No message on phones that a physical keyboard is expected | Confusing on touch-only devices | Add a short notice on small touch screens |
+
+### 12.3 Open questions
+
+1. Should consistency get headline space next to accuracy, since it is the most diagnostic number?
+2. Should a personal best require a minimum accuracy, for example 90%, so a fast careless run cannot hold the record?
+3. How large must the content pool be before memorisation stops mattering? About 1,000 words is an estimate, not a measured threshold.
+4. Is the single-file rule worth keeping through Phase 3?
+
+## 13. Testing and evaluation
+
+Testing today is manual, using the 18 test cases below; the proposal adds automated fixture tests for the scoring code. Success is judged without analytics, against five measures a single maintainer can check honestly.
+
+### 13.1 Manual test cases
+
+| ID | Test | Expected result |
+| --- | --- | --- |
+| TC-01 | Type a 10-word test with no mistakes | Accuracy 100%; characters show `n/0/0/0` |
+| TC-02 | Leave one wrong character uncorrected | Wrong = 1; word underlined; net WPM below raw WPM |
+| TC-03 | Type a wrong character, then fix it with backspace | Wrong keystroke counts once; the backspace itself costs nothing |
+| TC-04 | Press space two letters early | Missed = 2 |
+| TC-05 | Type 15 characters past a word's end | Extra stops at 12 |
+| TC-06 | Backspace at the start of a word after a correct word, then after a wrong word | Blocked after the correct word; allowed after the wrong one |
+| TC-07 | Run `time 15` | Ends at 15 s; words never run out |
+| TC-08 | Beat a stored best, then run a new configuration | `new best · +N`, then `first record` |
+| TC-09 | Dispatch a `KeyboardEvent` from the console | Ignored |
+| TC-10 | Paste or drop text into the test | Nothing entered |
+| TC-11 | Edit a WPM in DevTools → Local Storage, then reload | Save discarded; records empty |
+| TC-12 | Change the WPM with Inspect Element | Value snaps back |
+| TC-13 | Open in a private window with storage blocked | App works; nothing remembered |
+| TC-14 | Block `fonts.googleapis.com` | Fallback fonts; fully usable |
+| TC-15 | Switch through all 8 themes | Text legible; logo recolours correctly |
+| TC-16 | Open `index.html` straight from disk | Works exactly as on the web |
+| TC-17 | Turn on reduced motion in the OS | No caret glide, blink or fades |
+| TC-18 | Resize to 375 px wide | Results stack; key hints hide; no sideways scroll |
+
+### 13.2 Cross-browser checks
+
+Each release is checked in current Chrome, Edge and Firefox on Windows 11, and in Safari when a Mac is available.
+
+### 13.3 Proposed automated tests
+
+A small fixture file will replay fixed keystroke sequences through `typeChar`, `commitWord` and `backspace`. Each fixture asserts the exact net WPM, raw WPM, accuracy, consistency and character counts. This protects the part of the code users trust most.
+
+### 13.4 Success measures
 
 | Measure | Target | How it is judged |
 | --- | --- | --- |
-| **Time to first keystroke** | Under 2 seconds from opening the URL | Stopwatch. The words must already be on screen; typing is what starts the test |
-| **Return use by the maintainer** | Used voluntarily for practice, not just for testing | Honest self-report. A trainer its own author avoids is not finished |
-| **Measurement survives scrutiny** | A skeptical typist reads §4 and agrees the numbers are fair | Qualitative, and the one that matters most — the product's whole claim is honest measurement |
-| **Runs anywhere, unchanged** | Opens identically from `file://`, a USB stick and a web host | Direct check on each before release |
-| **Themes hold up** | All eight legible, brand mark correct in each | Visual pass; already verified for dusk, daylight, bubblegum and terminal |
+| Time to first keystroke | Under 2 s from opening the URL | Stopwatch test |
+| Fair measurement | A sceptical typist reads section 5.7 and agrees the scores are fair | Feedback from 3–5 volunteer typists |
+| Runs anywhere unchanged | Same behaviour from `file://`, USB drive and GitHub Pages | Direct check before each release |
+| Themes hold up | All 8 legible with a correct logo | Visual pass; dusk, daylight, bubblegum and terminal checked so far |
+| Real use | The owner practises with it by choice, not only to test it | Honest self-report after 4 weeks |
 
-### Effort
+## 14. Future enhancements and conclusion
 
-The existing build is complete, so these are incremental estimates for one person working in focused sessions:
+The most valuable future work is Phase 3, which turns FunType from a scoreboard into a coach by finding each user's weak keys. Everything before it protects the fairness of the numbers that coaching will rely on.
 
-| Phase | Estimate |
-| --- | --- |
-| Phase 0 — publish | Under an hour |
-| Phase 1 — content depth | 1–2 sessions, mostly sourcing and de-duplicating |
-| Phase 2 — history and trend | 2–3 sessions, including the storage migration |
-| Phase 3 — weakness analysis | 5–8 sessions; the only phase that warrants real design work first |
-| Phase 4 — shareable results | 1–2 sessions |
+### 14.1 Future enhancements
 
-No infrastructure cost at any phase. GitHub Pages is free for a public repository, and there is nothing to host beyond static files.
+| Enhancement | Value | Cost to simplicity |
+| --- | --- | --- |
+| Per-character weakness analysis and targeted drills (Phase 3) | High: the real differentiator | High: new state, panel and generator |
+| History and trend line per configuration (Phase 2) | High: shows plateaus and progress | Medium: storage migration |
+| Larger word list, more passages, TypeScript, Go and shell (Phase 1) | High: keeps scores honest | Low: data only; file grows to about 60 KB |
+| Export and import of the save | Medium: protects records across devices | Low |
+| "Hard words" toggle from a low-frequency list | Medium | Low |
+| Minimum accuracy for a personal best | Medium: rewards clean typing | Low, but changes the model (decide before launch) |
+| Shareable result links in the URL fragment (Phase 4) | Low to medium | Low, but risks a leaderboard feel |
+| Offline install as a web app | Low to medium | Needs a service-worker file, breaking the one-file rule |
 
-### Out of scope
+Accounts, cloud sync, multiplayer, a mobile layout, lessons and classroom tools remain out of scope (section 4).
 
-Stated plainly so it does not have to be re-argued: **accounts and cloud sync, multiplayer racing, a mobile or touch layout, lesson plans and curricula, teacher or cohort tooling, advertising, and any form of telemetry.** Each of these contradicts a position taken in §2. If one is later wanted, it should be adopted as a deliberate change of direction with this section amended — not slipped in as a feature.
+### 14.2 Conclusion
 
-### Recommendation
+FunType already works: four drill modes, a clear measurement model, per-configuration bests, eight themes, a finished brand and guards against score tampering, all in one 45 KB file that costs nothing to run. Its strength comes from what it refuses — accounts, servers and tracking — which keeps it private, fast and simple to maintain.
 
-**Do Phase 0 now** — it is an hour of work and every other decision is easier once the thing has a URL. **Settle the two open questions about the metrics** (§8, items 1 and 2) before publishing, because both touch §4 and both get expensive the moment real records exist. **Then do Phase 1**, which protects the measurements, before anything more interesting.
+### 14.3 Recommendation
 
-Phase 3 is where the actual product is. Everything before it is getting into position to build it honestly.
+1. **Publish now (Phase 0).** Under an hour of work, and every later decision is easier with a live URL.
+2. **Settle open questions 1 and 2 (section 12.3) before launch,** because both change the measurement model.
+3. **Then build Phase 1** to protect score fairness, followed by Phases 2 and 3.
+4. **Treat Phase 4 as optional** and revisit it after Phase 3 ships.
