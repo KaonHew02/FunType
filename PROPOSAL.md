@@ -6,7 +6,7 @@
 
 ## Executive summary
 
-**FunType is a typing-speed trainer that runs entirely in a browser tab.** One HTML file of roughly 41 KB carrying its own markup, styles and logic. No server, no build step, no install, no account, no network call except two font requests. Open the file and type.
+**FunType is a typing-speed trainer that runs entirely in a browser tab.** One HTML file of roughly 45 KB carrying its own markup, styles and logic. No server, no build step, no install, no account, no network call except two font requests. Open the file and type.
 
 A working build exists today at [github.com/KaonHew02/FunType](https://github.com/KaonHew02/FunType). It is not a prototype. Four drill modes, a complete metrics engine, per-configuration personal bests, eight themes and a finished brand mark are all shipped and working. What this document does is set down what was built, why each decision went the way it did, and what the next phases should be — so the project can be evaluated, handed to someone else, or picked up after a six-month gap without archaeology.
 
@@ -160,7 +160,7 @@ Every stored personal best was produced under these exact definitions. Changing 
 
 ### The central constraint
 
-**One file, no build.** `index.html` is 41,050 bytes and contains the markup, the stylesheet and the whole application in a single document. There is no bundler, no package manager, no `node_modules`, no transpile step and no framework. Vanilla JavaScript against the DOM.
+**One file, no build.** `index.html` is 45,068 bytes and contains the markup, the stylesheet and the whole application in a single document. There is no bundler, no package manager, no `node_modules`, no transpile step and no framework. Vanilla JavaScript against the DOM.
 
 This is a constraint, not an accident, and it buys four things:
 
@@ -205,9 +205,12 @@ Everything persistent lives in `localStorage` under the single key **`funtype.v1
   "numbers": false,
   "theme": "dusk",
   "bests": { "time-30": { "wpm": 78, "acc": 96, "at": 1758499200000 } },
-  "tests": 42
+  "tests": 42,
+  "seal": "3kq9zv1x0b2"
 }
 ```
+
+`seal` is a hash of every other field, so a save edited by hand no longer matches and is discarded. Each field is also validated against the values the app can produce before it is used. Both are deterrents against casual tampering, not protection against someone who reads the source — see the README's *Tamper guards*.
 
 Both the read and the write are wrapped in `try`/`catch`. If storage is blocked — private windows, hardened browser settings — the app runs normally for the session and simply forgets afterwards, rather than failing to start. The `v1` in the key is the version handle described in §4.
 

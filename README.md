@@ -50,6 +50,15 @@ Toggles: `! punctuation` adds capitals, commas, quotes and brackets; `# numbers`
 
 Personal bests are kept per exact configuration (`time-30`, `words-25-p`, `code-sql`…), so turning punctuation on starts a fresh record rather than polluting the old one. Everything lives in `localStorage` under `funtype.v1` — it stays on this browser, on this machine, and never leaves it.
 
+## Tamper guards
+
+- **Only a real keyboard types.** Key presses faked by a script (a console auto-typer) are ignored, and paste / drag-and-drop into the test are blocked.
+- **Impossible runs are not recorded.** Anything over 400 wpm is shown as *not recorded* and never becomes a personal best.
+- **The save is sealed.** It carries a `seal` field — a hash of its own contents. A value edited by hand no longer matches, and the whole save is discarded. Every field is also checked against what the app itself could have written, so a bad value can neither inject markup nor stop the app starting.
+- **Scores on screen are guarded.** Edits to the records bar or the results screen from Inspect Element or the console are reverted the moment they land.
+
+These are deterrents, not locks. Everything runs in the visitor's own browser and the source is public, so a determined person can still run a modified copy — but only on their own screen. Nothing they do reaches anyone else, because nothing is ever sent anywhere. Anything that has to be trusted by other people, like a shared leaderboard, would need a server that checks each run.
+
 ## Design
 
 - **Ink** `#16161e`, **accent apricot** `#ff9e64`, typed text `#e6e4f0`, errors `#f7768e`.

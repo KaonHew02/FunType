@@ -289,6 +289,7 @@ const AMOUNTS = {
    ============================================================ */
 
 const LS = 'funtype.v1';
+const MAX_WPM = 400;   // well past any human run — anything higher is a bot, a paste or an edited save
 const S = {
   mode:'time', amount:{ time:'30', words:'25', text:'medium', code:'js' },
   punctuation:false, numbers:false, theme:'dusk',
@@ -300,24 +301,72 @@ const S = {
 let BESTS = {}, TESTS = 0;
 
 const $ = id => document.getElementById(id);
+const esc = v => String(v).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 const el = { words:$('words'), typing:$('typing'), live:$('live'), liveLeft:$('liveLeft'),
   liveWpm:$('liveWpm'), bar:$('cmdbar'), amounts:$('amounts'), test:$('testView'),
   result:$('resultView'), records:$('records'), themes:$('themes'), sink:$('sink') };
 
+/* Saved data is untrusted: anyone can rewrite it from the console, and on GitHub
+   Pages every repo under the same account shares this origin's storage. Keep only
+   values that match what the app itself would have written. */
+const has = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
+const isAmount = (mode, v) => has(AMOUNTS, mode) && AMOUNTS[mode].some(([val]) => val === v);
+const isBestKey = k => {
+  const m = /^(\w+)-(\w+)(-p)?(-n)?$/.exec(k);
+  return !!m && isAmount(m[1], m[2]);
+};
+const isBest = b => !!b && typeof b === 'object' &&
+  Number.isInteger(b.wpm) && b.wpm >= 0 && b.wpm <= MAX_WPM &&
+  Number.isInteger(b.acc) && b.acc >= 0 && b.acc <= 100 &&
+  Number.isFinite(b.at);
+
+/* The save carries a seal — a hash of its own contents — so a number edited by hand
+   (DevTools → Application → Local Storage) no longer matches, and the save is thrown
+   away. It stops casual edits, not a determined one: the source is public, so anyone
+   who reads it can work out a seal. Saves from before the seal existed are let through
+   once, but only if every record in them is older than the seal itself. Changing
+   sealOf() retires every save in existence. */
+const SEALED_SINCE = Date.UTC(2026, 8, 23, 1);   // when sealing shipped — no honest unsealed record is newer
+function sealOf(str){
+  const s = 'funtype-seal:' + str;
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for(let i = 0; i < s.length; i++){
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+const isPreSeal = d => !d.bests || typeof d.bests !== 'object' ||
+  Object.values(d.bests).every(b => !!b && Number.isFinite(b.at) && b.at < SEALED_SINCE);
+
 function load(){
+  let saved;
+  try{ saved = JSON.parse(localStorage.getItem(LS) || 'null'); }
+  catch(e){ return; /* first run, storage blocked, or a save too mangled to read */ }
+  if(!saved || typeof saved !== 'object') return;
+  const { seal, ...d } = saved;
+  const preSeal = seal === undefined;
+  if(preSeal ? !isPreSeal(d) : seal !== sealOf(JSON.stringify(d))){ save(); return; }   // edited — start fresh
   try{
-    const d = JSON.parse(localStorage.getItem(LS) || '{}');
-    if(d.mode && AMOUNTS[d.mode]) S.mode = d.mode;
-    if(d.amount) Object.assign(S.amount, d.amount);
-    S.punctuation = !!d.punctuation; S.numbers = !!d.numbers;
-    if(d.theme && THEMES[d.theme]) S.theme = d.theme;
-    BESTS = d.bests || {}; TESTS = d.tests || 0;
-  }catch(e){ /* first run, or storage blocked */ }
+    if(has(AMOUNTS, d.mode)) S.mode = d.mode;
+    if(d.amount && typeof d.amount === 'object')
+      for(const m of Object.keys(S.amount)) if(isAmount(m, d.amount[m])) S.amount[m] = d.amount[m];
+    S.punctuation = d.punctuation === true; S.numbers = d.numbers === true;
+    if(has(THEMES, d.theme)) S.theme = d.theme;
+    if(d.bests && typeof d.bests === 'object')
+      for(const [k, b] of Object.entries(d.bests))
+        if(isBestKey(k) && isBest(b)) BESTS[k] = { wpm:b.wpm, acc:b.acc, at:b.at };
+    if(Number.isSafeInteger(d.tests) && d.tests > 0) TESTS = d.tests;
+  }catch(e){ /* malformed field — keep the defaults */ }
+  if(preSeal) save();
 }
 function save(){
   try{
-    localStorage.setItem(LS, JSON.stringify({ mode:S.mode, amount:S.amount,
-      punctuation:S.punctuation, numbers:S.numbers, theme:S.theme, bests:BESTS, tests:TESTS }));
+    const d = { mode:S.mode, amount:S.amount, punctuation:S.punctuation, numbers:S.numbers,
+      theme:S.theme, bests:BESTS, tests:TESTS };
+    localStorage.setItem(LS, JSON.stringify({ ...d, seal:sealOf(JSON.stringify(d)) }));
   }catch(e){ /* storage blocked — session still works */ }
 }
 
@@ -603,6 +652,18 @@ function finish(){
    results
    ============================================================ */
 
+/* Scores on screen only ever come from the app. Any other edit to them — Inspect
+   Element, a line pasted into the console — is put back as soon as it lands. */
+const drawn = new Map();
+const guard = new MutationObserver(() => {
+  for(const [node, html] of drawn) if(node.innerHTML !== html) node.innerHTML = html;
+});
+function draw(node, html){
+  node.innerHTML = html;
+  drawn.set(node, node.innerHTML);
+  guard.observe(node, { childList:true, subtree:true, characterData:true, attributes:true });
+}
+
 const modeKey = () => S.mode + '-' + S.amount[S.mode] +
   (S.punctuation ? '-p' : '') + (S.numbers ? '-n' : '');
 const modeLabel = () => S.mode + ' ' + S.amount[S.mode] +
@@ -617,14 +678,16 @@ function showResults(){
   const con = Math.round(consistency());
 
   const key = modeKey(), prev = BESTS[key];
-  const isPB = !prev || wpm > prev.wpm;
-  if(isPB && isFinite(wpm)) BESTS[key] = { wpm, acc, at: Date.now() };
+  const counted = isFinite(wpm) && wpm <= MAX_WPM;
+  const isPB = counted && (!prev || wpm > prev.wpm);
+  if(isPB) BESTS[key] = { wpm, acc, at: Date.now() };
   TESTS++; save(); renderRecords();
 
-  el.result.innerHTML =
+  draw(el.result,
     '<div class="results">' +
       '<div class="headline">' +
-        (isPB && prev ? '<span class="pb">new best · +' + (wpm - prev.wpm) + '</span>' :
+        (!counted ? '<span class="pb">not recorded · over ' + MAX_WPM + ' wpm</span>' :
+         isPB && prev ? '<span class="pb">new best · +' + (wpm - prev.wpm) + '</span>' :
          isPB ? '<span class="pb">first record</span>' : '') +
         '<div class="big"><span>wpm</span><b>' + wpm + '</b></div>' +
         '<div class="big sec"><span>accuracy</span><b>' + acc + '%</b></div>' +
@@ -637,22 +700,20 @@ function showResults(){
         '</div>' +
       '</div>' +
       '<div class="facts">' +
-        fact('test', modeLabel()) +
+        fact('test', esc(modeLabel())) +
         fact('raw', raw + ' <small>wpm</small>') +
         fact('consistency', con + '%') +
         fact('characters', t.correct + '<small>/' + t.incorrect + '/' + t.extra + '/' + t.missed + '</small>') +
         fact('time', secs.toFixed(1) + '<small>s</small>') +
-        fact('personal best', (BESTS[key] ? BESTS[key].wpm : wpm) + ' <small>wpm</small>') +
+        fact('personal best', BESTS[key] ? BESTS[key].wpm + ' <small>wpm</small>' : '—') +
       '</div>' +
     '</div>' +
     '<div class="controls" style="margin-top:22px">' +
       '<button class="ghost solid" id="again">next test</button>' +
       '<button class="ghost" id="repeat">repeat this text</button>' +
-    '</div>';
+    '</div>');
 
   el.test.hidden = true; el.result.hidden = false;
-  $('again').onclick = () => newTest();
-  $('repeat').onclick = () => newTest(true);
 }
 const fact = (label, val) => '<div class="fact"><span>' + label + '</span><b>' + val + '</b></div>';
 
@@ -721,13 +782,13 @@ function chartSVG(){
 function renderRecords(){
   const mine = BESTS[modeKey()];
   const all = Object.values(BESTS).reduce((m, b) => (!m || b.wpm > m.wpm) ? b : m, null);
-  el.records.innerHTML =
+  draw(el.records,
     chip(mine ? mine.wpm : '—', 'best · ' + S.mode + ' ' + S.amount[S.mode], !mine) +
     chip(all ? all.wpm : '—', 'all-time best', !all) +
-    chip(TESTS || '—', 'tests run', !TESTS);
+    chip(TESTS || '—', 'tests run', !TESTS));
 }
 const chip = (v, label, empty) =>
-  '<div class="rec' + (empty ? ' empty' : '') + '"><b>' + v + '</b><span>' + label + '</span></div>';
+  '<div class="rec' + (empty ? ' empty' : '') + '"><b>' + esc(v) + '</b><span>' + esc(label) + '</span></div>';
 
 /* ============================================================
    lifecycle
@@ -789,6 +850,7 @@ function bindBar(){
 /* ------------------------- input ------------------------- */
 
 document.addEventListener('keydown', e => {
+  if(!e.isTrusted) return;   // events faked by a script (a console auto-typer), not a keyboard
   if(e.key === 'Tab' && !e.shiftKey){ e.preventDefault(); newTest(true); return; }
   if(e.key === 'Escape'){ e.preventDefault(); newTest(); return; }
   if(e.ctrlKey || e.metaKey || e.altKey){
@@ -805,9 +867,9 @@ document.addEventListener('keydown', e => {
 });
 
 /* mobile / IME keyboards report key="Unidentified", so mirror the sink's value */
-el.sink.addEventListener('input', () => {
+el.sink.addEventListener('input', e => {
   const v = el.sink.value;
-  if(!el.result.hidden){ el.sink.value = ' '; return; }
+  if(!e.isTrusted || !el.result.hidden){ el.sink.value = ' '; return; }
   if(v.length === 0){ backspace(false); }
   else if(v.length > 1){
     for(const ch of v.slice(1)){ if(ch === ' ') commitWord(); else typeChar(ch); }
@@ -815,8 +877,16 @@ el.sink.addEventListener('input', () => {
   el.sink.value = ' ';
   resetIdle();
 });
+/* the words are on screen, so pasting or dropping them in would "type" the whole test at once */
+['paste', 'drop'].forEach(t => el.sink.addEventListener(t, e => e.preventDefault()));
 
 el.typing.addEventListener('mousedown', e => { e.preventDefault(); focusTest(); });
+/* delegated: the guard may rebuild the result buttons, which would drop their own handlers */
+el.result.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(b && b.id === 'again') newTest();
+  else if(b && b.id === 'repeat') newTest(true);
+});
 $('restart').onclick = () => newTest();
 $('brand').onclick = () => newTest();
 window.addEventListener('resize', () => { S.rowStep = 0; moveCaret(); });
