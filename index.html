@@ -652,16 +652,34 @@ function finish(){
    results
    ============================================================ */
 
-/* Scores on screen only ever come from the app. Any other edit to them — Inspect
-   Element, a line pasted into the console — is put back as soon as it lands. */
-const drawn = new Map();
-const guard = new MutationObserver(() => {
-  for(const [node, html] of drawn) if(node.innerHTML !== html) node.innerHTML = html;
-});
+/* Scores on screen only ever come from the app. Any other edit to the words and numbers
+   — Inspect Element, a line pasted into the console — is put back as soon as it lands.
+   Only the text is compared: dark-mode and other styling extensions add their own style
+   rules and attributes to every page, and fighting them over markup locked the page in a
+   loop that froze the last second of every test. Something that rewrites the text again
+   the moment it is put back is a translator or another extension, not a person, so after
+   a few rounds the guard leaves that node alone rather than loop. */
+const shownText = node => {
+  let s = '';
+  const w = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+  while(w.nextNode()) if(!w.currentNode.parentNode.closest('style')) s += w.currentNode.data;
+  return s;
+};
+const guards = new Map();
 function draw(node, html){
+  if(guards.has(node)) guards.get(node).disconnect();
   node.innerHTML = html;
-  drawn.set(node, node.innerHTML);
-  guard.observe(node, { childList:true, subtree:true, characterData:true, attributes:true });
+  const text = shownText(node);
+  let restores = 0, since = 0;
+  const guard = new MutationObserver(() => {
+    if(shownText(node) === text) return;
+    const now = performance.now();
+    if(now - since > 1000){ since = now; restores = 0; }
+    if(++restores > 3){ guard.disconnect(); return; }
+    node.innerHTML = html;
+  });
+  guard.observe(node, { childList:true, subtree:true, characterData:true });
+  guards.set(node, guard);
 }
 
 const modeKey = () => S.mode + '-' + S.amount[S.mode] +
