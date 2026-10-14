@@ -546,7 +546,7 @@ Google Fonts supplies the two typefaces, preconnected so they arrive with the pa
 
 ## Project plan and timeline
 
-Three phases are complete. Phase 4 is what this proposal asks approval for: ten weeks from 28 September to 6 December 2026, closing the open objectives and adding coaching.
+Three phases are complete. Phase 4 is what this proposal asks approval for: ten weeks from 19 October to 27 December 2026, closing the open objectives and adding coaching.
 
 ### Phases 1–3 — delivered
 
@@ -562,22 +562,22 @@ Five commits across those three phases, and the app is live on GitHub Pages. The
 
 | Week | Dates | Work | Deliverable |
 | --- | --- | --- | --- |
-| 1 | 28 Sep – 4 Oct | **Freeze the model.** Decide open questions 1 and 2 in [Risks and mitigations](#risks-and-mitigations); fix the known issues; build the scoring harness | Measurement model frozen; objective O13 met |
-| 2–3 | 5–18 Oct | **Content depth.** Word list to at least 1,000 unique words; passages from 6 to 15; code from 9 to 18 lines, adding TypeScript, Go and shell | Objective O14 met |
-| 4–5 | 19 Oct – 1 Nov | **History and export.** Last 20 runs per configuration with a trend line; export and import of the save; `funtype.v1` → `funtype.v2` migration | Every v1 best readable after migration |
-| 6–9 | 2–29 Nov | **M8 Coach.** Per-key error and delay profile across recent runs; a drill weighted to the weakest keys; a coaching panel on the results | Weak keys named and drilled |
-| 10 | 30 Nov – 6 Dec | **Release.** Browser regression, the eight-theme visual pass, accessibility re-check, README and proposal refresh | v1.0 live; objective O12 met |
+| 1 | 19–25 Oct | **Freeze the model.** Decide open questions 1 and 2 in [Risks and mitigations](#risks-and-mitigations); fix the known issues; build the scoring harness | Measurement model frozen; objective O13 met |
+| 2–3 | 26 Oct – 8 Nov | **Content depth.** Word list to at least 1,000 unique words; passages from 6 to 15; code from 9 to 18 lines, adding TypeScript, Go and shell | Objective O14 met |
+| 4–5 | 9–22 Nov | **History and export.** Last 20 runs per configuration with a trend line; export and import of the save; `funtype.v1` → `funtype.v2` migration | Every v1 best readable after migration |
+| 6–9 | 23 Nov – 20 Dec | **M8 Coach.** Per-key error and delay profile across recent runs; a drill weighted to the weakest keys; a coaching panel on the results | Weak keys named and drilled |
+| 10 | 21–27 Dec | **Release.** Browser regression, the eight-theme visual pass, accessibility re-check, README and proposal refresh | v1.0 live; objective O12 met |
 
 ### Milestones
 
 | ID | Milestone | Due | Gate |
 | --- | --- | --- | --- |
-| MS-1 | Measurement model frozen | 2026-10-02 | Open questions 1 and 2 decided in writing |
-| MS-2 | Scoring harness green | 2026-10-04 | Every metric asserted against a known keystroke sequence |
-| MS-3 | Content pool tripled | 2026-10-18 | 1,000+ unique words; 15 passages; 18 code lines |
-| MS-4 | History and export live | 2026-11-01 | A v1 save migrates with no best lost; export → wipe → import is identical |
-| MS-5 | Coaching live | 2026-11-29 | Weak keys named on the results and drilled on demand |
-| MS-6 | v1.0 released | 2026-12-06 | Live, documented and tagged |
+| MS-1 | Measurement model frozen | 2026-10-23 | Open questions 1 and 2 decided in writing |
+| MS-2 | Scoring harness green | 2026-10-25 | Every metric asserted against a known keystroke sequence |
+| MS-3 | Content pool tripled | 2026-11-08 | 1,000+ unique words; 15 passages; 18 code lines |
+| MS-4 | History and export live | 2026-11-22 | A v1 save migrates with no best lost; export → wipe → import is identical |
+| MS-5 | Coaching live | 2026-12-20 | Weak keys named on the results and drilled on demand |
+| MS-6 | v1.0 released | 2026-12-27 | Live, documented and tagged |
 
 MS-1 is a hard gate. Every later milestone produces records, and records made before the model is frozen are records that may have to be thrown away.
 
@@ -776,8 +776,8 @@ The case rests on three things:
 | --- | --- |
 | **Approve** | Phase 4 as scoped — 10 weeks, about 50 hours, one developer |
 | **Budget** | RM 0 committed |
-| **Decide by** | 2026-09-25 |
-| **Start** | 2026-09-28 |
+| **Decide by** | 2026-10-16 |
+| **Start** | 2026-10-19 |
 
 If Phase 4 is not approved, the recommendation is to do week 1 anyway: answer the two open questions, fix the known issues and build the scoring harness. It is about five hours, and it protects every record that users make from then on.
 
