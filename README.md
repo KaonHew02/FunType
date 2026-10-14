@@ -11,7 +11,8 @@ A typing-speed trainer. Open `index.html` in any browser — no server, no build
 | `logo.svg` | Full lockup: keycap mark + wordmark. Needs Gabarito installed to render the text correctly. |
 | `logo-mark.svg` | Icon only — pure geometry, safe anywhere (app icon, README, social avatar). |
 | `logo-favicon.svg` | The mark retuned for 16–24px: bigger cap, thicker caret, less padding. **Use this below ~28px.** |
-| `PROPOSAL.md` | Project proposal — objectives, scope, requirements, the measurement model, architecture, anti-tampering, design, timeline, budget, risks and testing. |
+| `docs/PROPOSAL.md` | Project proposal — the case, the measurement model, scope, architecture, security, design, plan, testing, risks and budget. The source of the two editions below. |
+| `docs/FunType-Project-Proposal.docx` / `.pdf` | The same proposal formatted for sharing: cover, document control, contents, numbered sections and diagrams. Generated from `docs/PROPOSAL.md`, never edited by hand. |
 
 To regenerate the artifact copy after editing `index.html`, strip the first 5 lines and the last 2:
 
