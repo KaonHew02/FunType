@@ -23,9 +23,9 @@ The product exists because the trainers people already use either score generous
 | Dependencies | No npm packages, no build step, no framework, no API keys; one Google Fonts stylesheet |
 | Running cost | RM 0/month — hosting is GitHub Pages and storage is the user's own browser |
 | Effort to date | 6 commits, 11 Sep 2026 – 14 Oct 2026 |
-| Proposed next phase | 10 weeks: freeze and test the measurement model, triple the content, add history, build per-key coaching |
+| Proposed next phase | 9 weeks: freeze and test the measurement model, triple the content, add history, build per-key coaching |
 
-**The ask.** Approval to run the ten-week Phase 4 in [Project plan and timeline](#project-plan-and-timeline) at the resourcing set out in [Resources and budget](#resources-and-budget) — one developer, part-time (about 50 hours), and RM 0 committed.
+**The ask.** Approval to run the nine-week Phase 4 in [Project plan and timeline](#project-plan-and-timeline) at the resourcing set out in [Resources and budget](#resources-and-budget) — one developer, part-time (about 50 hours), and RM 0 committed.
 
 ## Background and problem statement
 
@@ -546,7 +546,7 @@ Google Fonts supplies the two typefaces, preconnected so they arrive with the pa
 
 ## Project plan and timeline
 
-Three phases are complete. Phase 4 is what this proposal asks approval for: ten weeks from 19 October to 23 December 2026, closing the open objectives and adding coaching. The release week is cut to three days so that v1.0 ships before Christmas; like every week in the plan, it is about five hours of work.
+Three phases are complete. Phase 4 is what this proposal asks approval for: nine weeks from 26 October to 23 December 2026, closing the open objectives and adding coaching. To ship v1.0 before Christmas, coaching has three weeks rather than four and the release week is cut to three days; the plan keeps its 50 hours by running at about 5½ hours a week.
 
 ### Phases 1–3 — delivered
 
@@ -562,20 +562,20 @@ Five commits across those three phases, and the app is live on GitHub Pages. The
 
 | Week | Dates | Work | Deliverable |
 | --- | --- | --- | --- |
-| 1 | 19–25 Oct | **Freeze the model.** Decide open questions 1 and 2 in [Risks and mitigations](#risks-and-mitigations); fix the known issues; build the scoring harness | Measurement model frozen; objective O13 met |
-| 2–3 | 26 Oct – 8 Nov | **Content depth.** Word list to at least 1,000 unique words; passages from 6 to 15; code from 9 to 18 lines, adding TypeScript, Go and shell | Objective O14 met |
-| 4–5 | 9–22 Nov | **History and export.** Last 20 runs per configuration with a trend line; export and import of the save; `funtype.v1` → `funtype.v2` migration | Every v1 best readable after migration |
-| 6–9 | 23 Nov – 20 Dec | **M8 Coach.** Per-key error and delay profile across recent runs; a drill weighted to the weakest keys; a coaching panel on the results | Weak keys named and drilled |
-| 10 | 21–23 Dec | **Release.** Browser regression, the eight-theme visual pass, accessibility re-check, README and proposal refresh | v1.0 live; objective O12 met |
+| 1 | 26 Oct – 1 Nov | **Freeze the model.** Decide open questions 1 and 2 in [Risks and mitigations](#risks-and-mitigations); fix the known issues; build the scoring harness | Measurement model frozen; objective O13 met |
+| 2–3 | 2–15 Nov | **Content depth.** Word list to at least 1,000 unique words; passages from 6 to 15; code from 9 to 18 lines, adding TypeScript, Go and shell | Objective O14 met |
+| 4–5 | 16–29 Nov | **History and export.** Last 20 runs per configuration with a trend line; export and import of the save; `funtype.v1` → `funtype.v2` migration | Every v1 best readable after migration |
+| 6–8 | 30 Nov – 20 Dec | **M8 Coach.** Per-key error and delay profile across recent runs; a drill weighted to the weakest keys; a coaching panel on the results | Weak keys named and drilled |
+| 9 | 21–23 Dec | **Release.** Browser regression, the eight-theme visual pass, accessibility re-check, README and proposal refresh | v1.0 live; objective O12 met |
 
 ### Milestones
 
 | ID | Milestone | Due | Gate |
 | --- | --- | --- | --- |
-| MS-1 | Measurement model frozen | 2026-10-23 | Open questions 1 and 2 decided in writing |
-| MS-2 | Scoring harness green | 2026-10-25 | Every metric asserted against a known keystroke sequence |
-| MS-3 | Content pool tripled | 2026-11-08 | 1,000+ unique words; 15 passages; 18 code lines |
-| MS-4 | History and export live | 2026-11-22 | A v1 save migrates with no best lost; export → wipe → import is identical |
+| MS-1 | Measurement model frozen | 2026-10-30 | Open questions 1 and 2 decided in writing |
+| MS-2 | Scoring harness green | 2026-11-01 | Every metric asserted against a known keystroke sequence |
+| MS-3 | Content pool tripled | 2026-11-15 | 1,000+ unique words; 15 passages; 18 code lines |
+| MS-4 | History and export live | 2026-11-29 | A v1 save migrates with no best lost; export → wipe → import is identical |
 | MS-5 | Coaching live | 2026-12-20 | Weak keys named on the results and drilled on demand |
 | MS-6 | v1.0 released | 2026-12-23 | Live, documented and tagged |
 
@@ -686,7 +686,7 @@ The architecture trades a server for privacy, simplicity and cost, and most of t
 | The word list holds 10 duplicate entries — `door` three times; `high`, `small`, `late`, `water`, `build`, `start`, `story` and `watch` twice | Frequency slightly skewed | De-duplicated in weeks 2–3 |
 | The chart note asks for 15 seconds, but the chart appears after 2 | A misleading message | Align the wording — week 1 |
 | `consistency()` opens with a filter that keeps every element | Dead code; the result is correct | Remove it — week 1 |
-| `tab` and `space` are test keys, so the settings are reached with `shift` + `tab` and pressed with `enter` | Hard to discover for keyboard-only users | A visible hint, checked in the week 10 accessibility pass |
+| `tab` and `space` are test keys, so the settings are reached with `shift` + `tab` and pressed with `enter` | Hard to discover for keyboard-only users | A visible hint, checked in the week 9 accessibility pass |
 
 ## Resources and budget
 
@@ -696,7 +696,7 @@ FunType costs RM 0 a month to run today, and Phase 4 keeps it there. The only re
 
 | Role | Who | Commitment |
 | --- | --- | --- |
-| Developer, designer and tester | One person | About 5 hours a week for 10 weeks — **about 50 hours** |
+| Developer, designer and tester | One person | About 5½ hours a week for 9 weeks — **about 50 hours** |
 | Reviewer and product owner | The same person, practising on the app | Continuous — FunType is used while it is built |
 | Volunteer typists | Three to five people | One session each at MS-1 and MS-5, reading the formulas and saying whether the scores feel fair |
 
@@ -762,22 +762,22 @@ These have each been considered and declined. The reasons are recorded so they a
 
 ## Conclusion and approval
 
-FunType already works. It is live, it measures honestly with every formula published, it keeps a separate record for every configuration, it costs RM 0 a month, and since 23 September it resists the ways a local-only trainer's scores can actually be faked. What this proposal asks for is not a build from nothing — it is ten weeks to prove the numbers by test, make the content deep enough that the numbers stay honest, and then turn them into coaching.
+FunType already works. It is live, it measures honestly with every formula published, it keeps a separate record for every configuration, it costs RM 0 a month, and since 23 September it resists the ways a local-only trainer's scores can actually be faked. What this proposal asks for is not a build from nothing — it is nine weeks to prove the numbers by test, make the content deep enough that the numbers stay honest, and then turn them into coaching.
 
 The case rests on three things:
 
 1. **The foundation is sound and paid for.** The measurement model is defined, implemented and public; bests are kept per configuration; the save is validated and sealed. That is the hard part, and it is done.
-2. **The remaining scope is small and known.** One week to freeze and test the model, two for content, two for history and export, four for coaching, one to release.
+2. **The remaining scope is small and known.** One week to freeze and test the model, two for content, two for history and export, three for coaching, and three days to release.
 3. **The downside is bounded.** If M8 proves harder than planned, Phase 4 still delivers a tested measurement model, three times the content, history and export — at RM 0.
 
 ### The decision requested
 
 |  |  |
 | --- | --- |
-| **Approve** | Phase 4 as scoped — 10 weeks, about 50 hours, one developer |
+| **Approve** | Phase 4 as scoped — 9 weeks, about 50 hours, one developer |
 | **Budget** | RM 0 committed |
-| **Decide by** | 2026-10-16 |
-| **Start** | 2026-10-19 |
+| **Decide by** | 2026-10-23 |
+| **Start** | 2026-10-26 |
 
 If Phase 4 is not approved, the recommendation is to do week 1 anyway: answer the two open questions, fix the known issues and build the scoring harness. It is about five hours, and it protects every record that users make from then on.
 
